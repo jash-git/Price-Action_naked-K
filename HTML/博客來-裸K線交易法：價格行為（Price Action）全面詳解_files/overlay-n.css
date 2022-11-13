@@ -1,0 +1,76 @@
+/**
+ * 模擬商品頁面CSS
+ * Author: Cathy
+ */
+
+
+.jqmWindow {
+    /*height: 600px;*/
+    display: none;
+    position: fixed;
+    top: 2%;
+    /*margin-left: -300px;*/
+    /*width: 870px;*/
+    background-color: #F3F3F3;
+    color: #333;
+    border: 1px solid black;
+    padding:0 10px;
+}
+
+.jqmOverlay {
+    background-color: #000;
+}
+
+/* Background iframe styling for IE6. Prevents ActiveX bleed-through (<select> form elements, etc.) */
+* iframe.jqm {
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: expression(this.parentNode.offsetWidth+'px');
+    height: expression(this.parentNode.offsetHeight+'px');
+    
+}
+
+/* Fixed posistioning emulation for IE6
+     Star selector used to hide definition from browsers other than IE6
+     For valid CSS, use a conditional include instead */
+* html .jqmWindow {
+     position: absolute;
+     width: 870px;
+     top: expression((document.documentElement.scrollTop || document.body.scrollTop) + Math.round(5 * (document.documentElement.offsetHeight || document.body.clientHeight) / 100) + 'px');
+}
+
+#jqmTitle{
+    margin:0px;
+    padding:0px 0px 20px 0px;
+}
+
+#jqmTitle li{
+    list-style-type:none;
+    float:left;
+}
+
+#jqmTitleText{
+    width: 500px;
+    overflow: hidden;
+}
+
+.jqmClose{
+    background:#FFDD00;
+    border:1px solid #FFDD00;
+    color:#000;
+    /*padding: 0px 5px 0px 5px;*/
+    cursor:pointer;
+}
+
+#jqmContent{
+    width:100%;
+    height:642px;
+    display: block;
+    clear:both;
+    margin:0 auto;
+    margin-top:10px;
+    border:0px solid #ffffff;
+}
+

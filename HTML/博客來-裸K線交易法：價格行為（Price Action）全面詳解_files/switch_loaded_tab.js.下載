@@ -1,0 +1,23 @@
+ function switch_loaded_tab(opt_module_id,file_name){
+    var module_id = "";//模組編碼參數
+    var filename = file_name; //模組名稱
+      //主程式
+    this.main = function(opt_module_id){
+        var self = new filename(opt_module_id);
+        self.bindEvent();
+    }
+    //執行主程式
+    this.main(opt_module_id);
+ }
+
+ function M201105_045(module_id){
+     this.bindEvent = function(){
+         $("#"+module_id+" li[data-label]").click(function(){
+             var target = $(this).data('label');
+             $(this).addClass('here');
+             $('li[data-label]').not('[data-label='+target+']').removeClass('here');
+             $('ul[data-area='+target+']').show();
+             $('ul[data-area]').not('[data-area='+target+']').hide();
+         });
+     }
+ }

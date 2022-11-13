@@ -1,0 +1,504 @@
+var wishlistadd = 'F';
+function get_cookie(name){
+	var arg = name + "=";
+	var alen = arg.length;
+	var clen = document.cookie.length;
+	var i = 0;
+	while (i < clen){
+		var j = i + alen;
+		if (document.cookie.substring(i, j) == arg){
+			offset=j;
+			var endstr = document.cookie.indexOf (";", offset);
+			if (endstr == -1) endstr = document.cookie.length;
+				return unescape (document.cookie.substring(offset, endstr));
+		}
+		i = document.cookie.indexOf(" ", i) + 1;
+		if (i == 0) break;
+	}
+	return null;
+}
+
+//可訂購通知我
+function wishlist(item){
+    var now=new Date();
+    var sec  = now.getTime().toString();
+    if(wishlistadd=="F"){
+    $.ajax({ url: "/exep/prod/itemtracker_new.php?item="+item+"&sec="+sec,type:"get", dataType:"html",
+            success:function(msg){
+                if(window.B && B.alert) {
+                     B.alert(msg);
+                } else {    //PC版
+                    $("#wishlist").html(msg);
+                    wishlistadd="T";
+                }
+            }
+        });
+    }
+}
+
+function CheckMemberLogin_page(itemurl) {
+    var u_id = get_cookie("cid");
+    var u_passwd = get_cookie("pd");
+    if (u_id != null && u_passwd != null){
+            location.href = itemurl;
+    }else{
+            location.href = "https://cart.books.com.tw/member/login?url="+itemurl;
+    }
+}
+
+function pursue_item(item,ttype,itemurl){
+    var now=new Date();
+    var sec  = now.getTime().toString();
+    $.ajax({ url: "/exep/list/pursue_info.php?item="+item+"&tag_type="+ttype+"&sec="+sec,type:"get", dataType:"html",
+            success:function(msg){
+                var msgtmp = msg.split("、");
+                if(window.B && B.alert) {
+                    if(msgtmp[0]==0){
+                        B.alert('商品已加入您的下次再買清單，您可至會員專區中查詢！！');
+                        call_app_added_wishlist(item);
+                    }else if(msgtmp[0]=='overm'){
+                        B.alert('您的下次再買清單中的品項已超過500筆，請清除後再加入。');
+                    }else if(msgtmp[0]=='nologin'){
+                       //CheckMemberLogin_page(itemurl); //直接跳轉登入畫面
+                       B.alert('<a class="bt_alert gray mod_l" href="https://cart.books.com.tw/member/login?url='+itemurl+'">請先登入會員。</a> <a class="bt_alert" href="https://cart.books.com.tw/member/join_step1">還不是會員?</a>');
+                    }
+                } else { //PC版
+                    if(msgtmp[0]==0){
+                        alert('商品已加入您的下次再買清單，您可至會員專區中查詢！！');
+                    }else if(msgtmp[0]=='overm'){
+                        alert('您的下次再買清單中的品項已超過500筆，請清除後再加入。');
+                    }else if(msgtmp[0]=='nologin'){
+                        CheckMemberLogin_page(itemurl);
+                    }
+                }
+        }
+    });
+}
+
+function call_app_added_wishlist(item){
+    var price_sum = 0;
+    var items = [item];
+    if($('#item_price_for_app').length>0){
+        price_sum = $('#item_price_for_app').html();
+    }
+    var app_data = {
+      "event_type": "wishlist",
+      "content": {
+        "price_sum": parseInt(price_sum),
+        "currency": "TWD",
+        "items": items
+      }
+    };
+    if(typeof call_app_message == 'function'){
+        call_app_message(app_data);
+    }
+}
+
+function freeget(item){
+    $.ajax({
+        url: '/receive_ebooks/get_book',
+        async: false,
+        data: {item:item},
+        type: 'post',
+        dataType: 'json',
+        success: function(data){
+            alert(data.message);
+        },
+        error: function (data, status, e){
+            //alert(e);
+            alert('領用失敗');
+        }
+    });
+}
+
+//免費領用JS
+function freegetUnMultClick(item, device){
+     document.getElementById("cartBuy").href="javascript:;"; 
+     //location.href="http://www.books.com.tw/receive_ebooks/freeget_book/"+item;
+    var freeget_pop_p1 = '<!--免費領用--><div class="overlay" id= "div_freeget_overlay" style="display:block"></div><div class="book-free-win" id="div_freeget_win" style="display:block"><div class="wrap"><div class="winscroll" id="div_freeget_msg">';
+    var freeget_pop_p2 = '</div><!--fbar--><div class="fbar" id="div_freeget_fbar">';
+    var freeget_pop_p3 = '</div></div></div><!--end 免費領用-->';
+    var freeget_pop_m1 = '<!--免費領用--><div class="overlay" id= "div_freeget_overlay" style="display:block;opacity:1 z-index:99999999" id="alert_0"><div class="alert_win aligner-box" id="div_freeget_win"><!--book-free-win--><div class="book-free-win"><div class="winscroll" id="div_freeget_msg">';
+    var freeget_pop_m2 = '</div><div class="button_wrap clearfix" id="div_freeget_fbar">';
+    var freeget_pop_m3 = '</div></div><!--End book-free-win--></div></div><!--end 免費領用-->';
+    var buttontext;
+    var msgfeedback;
+    var hideJS = "javascript:hideFreegetWin('"+item+"','"+device+"')";
+    var str_login = '登入';
+    var str_wait = '稍後再領';
+    var str_gotoshelf = '前往電子書櫃';
+    var str_website = '繼續瀏覽網站';
+    var str_close = '關閉';
+
+    //因搜尋頁亦需免費領用按鈕，故用跨域呼叫jsonp
+    $.ajax({ url: "//www.books.com.tw/receive_ebooks/freeget_book",type:"get", dataType:"jsonp", jsonp: "item",jsonpCallback:item,
+        success:function(msg){
+            if (msg.code === '102') { //未登入
+                var url = 'https://cart.books.com.tw/member/login?url='+encodeURIComponent('//www.books.com.tw/products/'+item);
+                msgfeedback = '<p>'+msg.message+'</p>';
+                if (device === 'M') {
+                    buttontext = '<a href="'+url+'" class="button">'+str_login+'</a><a href="'+hideJS+'" class="button">'+str_wait+'</a>';
+                    $("body").prepend(freeget_pop_m1 + msgfeedback + freeget_pop_m2 + buttontext + freeget_pop_m3);
+                } else {
+                   buttontext = '<a href="'+url+'"><strong class="btn">'+str_login+'</strong></a><a href="'+hideJS+'"><strong class="btn">'+str_wait+'</strong></a>';
+                   $("body").prepend(freeget_pop_p1 + msgfeedback + freeget_pop_p2 + buttontext + freeget_pop_p3);
+                }
+            } else if (msg.code === '000') { //領用成功
+                //feedback message like 'c_title領用完成'
+                var url = 'https://viewer-ebook.books.com.tw/viewer/index.html?readlist=all&MemberLogout=true';
+                msgfeedback = '<p><i class="icon-ok-1"></i>'+msg.message+'</p>';
+                if (device === 'M') {
+                    buttontext = '<a href="'+url+'" class="button">'+str_gotoshelf+'</a><a href="'+hideJS+'" class="button">'+str_website+'</a>';
+                    $("body").prepend(freeget_pop_m1 + msgfeedback + freeget_pop_m2 + buttontext + freeget_pop_m3);
+                } else {
+                   buttontext = '<a href="'+url+'"><strong class="btn">'+str_gotoshelf+'</strong></a><a href="'+hideJS+'"><strong class="btn">'+str_website+'</strong></a>';
+                   $("body").prepend(freeget_pop_p1 + msgfeedback + freeget_pop_p2 + buttontext + freeget_pop_p3);
+                }
+            } else {
+                msgfeedback = '<p>'+msg.message+'</p>';
+                if (device === 'M') { 
+                    buttontext = '<a href="'+hideJS+'" class="button">'+str_close+'</a>';
+                    $("body").prepend(freeget_pop_m1 + msgfeedback + freeget_pop_m2 + buttontext + freeget_pop_m3);
+                } else {
+                    buttontext = '<a href="'+hideJS+'"><strong class="btn">'+str_close+'</strong></a>';
+                    $("body").prepend(freeget_pop_p1 + msgfeedback + freeget_pop_p2 + buttontext + freeget_pop_p3);
+                
+                }
+            }
+        },
+        error: function(xhr, ajaxOptions, thrownError){
+            msgfeedback = '<p>免費商品領取未成功，請稍後再試或洽客服</p>';
+            if (device === 'M') { 
+                buttontext = '<a href="'+hideJS+'" class="button">'+str_close+'</a>';
+                $("body").prepend(freeget_pop_m1 + msgfeedback + freeget_pop_m2 + buttontext + freeget_pop_m3);
+            } else {
+                buttontext = '<a href="'+hideJS+'"><strong class="btn">'+str_close+'</strong></a>';
+                $("body").prepend(freeget_pop_p1 + msgfeedback + freeget_pop_p2 + buttontext + freeget_pop_p3);
+            }
+        }
+    });
+}
+
+function hideFreegetWin(item, device){
+    document.getElementById("cartBuy").href="javascript:freegetUnMultClick('"+item+"','"+device+"')"; 
+    $('#div_freeget_overlay').hide();
+    $('#div_freeget_win').hide();
+}
+
+// 相片沖印：是否為快找APP瀏覽器，是則跳alert建議使用原生瀏覽器
+function editPrint(gainhow, isInApp){
+    if (isInApp) {
+        alert('為了提供您更好的編輯服務體驗，建議您使用電腦網頁，或手機瀏覽器編輯。謝謝您的配合。');
+    } else {
+        location.href = gainhow;
+    }
+}
+
+function select_set(){
+    var sub_items = [];
+        
+    $("#selector_div ul li").each(function(i){
+        var obj_select = "#selector"+(i+1);
+        $(obj_select).each(function(){
+                var opt_eq  = $(this).find(":selected").index(); //選中的index
+                if($(obj_select+' option').eq(opt_eq).val()!=''){//有選擇商品
+                    if($(obj_select+' option').eq(opt_eq).prop("disabled") == false){
+                        var sel_combine = jQuery.parseJSON($(obj_select+' option').eq(opt_eq).val());
+                        delete sel_combine.img_url;
+                        delete sel_combine.srcset;
+                        sub_items.push(sel_combine);
+                    }
+                }
+        });
+    });
+
+    return sub_items;
+}
+
+//組合商品商品頁，購物車區塊按鈕click
+//放入購物車/直接結帳 class = btn_cart
+//可訂購時通知我 class = btn_notifytobuy
+function clickCartBtn(item, device){
+    if(device == "P"){
+        var shoppcart_id = ".btn_shoppcart, .btn_newshoppcart, #cartBuy"; //黃色按鈕(ex:放入購物車、可訂購時通知我等)
+        var easycart_id = ".easycart";  //橘色按鈕(ex:直接結帳)
+    } else {
+        var shoppcart_id = "#cartBuy"; //黃色按鈕(ex:放入購物車、可訂購時通知我等)
+        var easycart_id = ".easycart";  //橘色按鈕(ex:直接結帳)
+    }
+    
+    //直接結帳
+    if(typeof(easycart_id+" a")!="undefined"){
+        $(easycart_id+" a").attr("href", "javascript:;");
+    }
+
+    //加入下次再買清單
+    if(device == "P"){
+        $(".btn_shopplist").attr("href", "javascript:pursue_item('"+item+"','insert','https://www.books.com.tw/products/"+item+"');");
+    } else {
+        $(".button.btn_1").attr("href", "javascript:pursue_item('"+item+"','insert','https://www.books.com.tw/products/"+item+"');");
+    }
+    
+    //可訂購時通知我 M:cartBuy、PC:btn_shoppcart
+    var btn_shoppcart_href = $(shoppcart_id+', .type02_btn05').attr('href');
+    if(typeof(btn_shoppcart_href)!="undefined" && btn_shoppcart_href.indexOf("wishlist") >= 0) {
+        $(shoppcart_id).attr("href", "javascript:wishlist('"+item+"');");
+    }
+    
+     $(shoppcart_id+", "+easycart_id+" a").click(function() {
+        var sub_items = [];
+        var sel_prod_num = 0;
+        var area_len = $("#selector_div ul li").length;
+
+        sub_items = select_set();
+        sel_prod_num = sub_items.length;
+        if(sel_prod_num > 0){
+            if(area_len == sel_prod_num){
+                //直接購買
+                var encode_sub_items = btoa(JSON.stringify(sub_items));
+                var org_url = encodeURIComponent(location.href);
+                $(easycart_id+" a").attr("href", "https://db.books.com.tw/shopping/rcart.php?sub_items="+encode_sub_items+"&buy_flag=now&org_url="+org_url);
+
+                //放入購物車
+                if(typeof(btn_shoppcart_href)!="undefined" && btn_shoppcart_href.indexOf("wishlist") >= 0 ) { 
+                    //可訂購時通知我
+                } else {
+                    var encode_sub_items = btoa(JSON.stringify(sub_items));
+                    $(shoppcart_id).attr("href", "https://db.books.com.tw/shopping/rcart.php?sub_items="+encode_sub_items+"&org_url="+org_url);
+                }
+            } else{
+                alert("請確認組合商品內容商品應選擇"+area_len+"項"); 
+                return false;
+            }
+        } else {
+            if(typeof(btn_shoppcart_href)!="undefined" && btn_shoppcart_href.indexOf("wishlist") >= 0 ) { 
+                //可訂購時通知我
+            } else {
+                alert("請確認組合商品內容");
+                return false;
+            }
+        }
+        //console.log('最後放入購物車:'+sel_prod_num);
+        //console.log(sub_items);
+    });
+}
+
+//組合商品商品頁，組合商品內容區下拉選單change
+function changeSetProdDropDownMenu(){      
+    $("#selector_div ul li").each(function(i){
+        var obj_select = "#selector"+(i+1);
+        //只有1個商品選擇，mobile hidden沒作用改用jQuery控制
+        /*if($(obj_select+' option').length<=2){
+           $(obj_select).hide();
+        }*/
+        $(obj_select).change(function(opt) {
+            //var sel_combine = jQuery.parseJSON($(obj_select+' option').eq(1).val());
+            var sel_combine = '';
+            var sel_img_url  = '';
+            var sel_prod_url = '';
+            var sel_sign_class = '';
+            var opt_eq = this.selectedIndex;
+            //selected opt
+            //$(obj_select+' option').removeAttr('selected');
+            //$(obj_select+' option').eq(opt_eq).attr("selected","selected"); //設定為選取
+            //.attr與jQuery Moible有衝突所以要用下面
+            //$(obj_select+' option').eq(opt_eq).prop("selected",true);
+            
+            var sel_val = $(obj_select+' option').eq(opt_eq).val();
+            if(sel_val !== ''){
+                sel_combine = jQuery.parseJSON(sel_val);
+                sel_img_url = sel_combine.img_url;
+                sel_srcset = sel_combine.srcset;
+                sel_prod_url = "https://www.books.com.tw/products/"+sel_combine.item;
+                //商品圖上壓上電子書/電子雜誌圖標
+                $("#prod_img"+(i+1)+" #sign").remove();
+                if(sel_sign_class == "" && sel_combine.item.substr(0,3) == "E05"){
+                    $("#prod_img"+(i+1)).append("<span class='sign_ebook' id='sign' aria-label='電子書'></span>");
+                } else if(sel_sign_class == "" && sel_combine.item.substr(0,3) == "E06"){
+                    $("#prod_img"+(i+1)).append("<span class='sign_emag' id='sign' aria-label='電子雜誌'></span>");
+                } else {}
+            }
+            
+            //將圖片更換為選擇的的商品圖
+            if(sel_img_url!=''){
+                $("#prod_img"+(i+1)+" img").attr("src", sel_img_url);
+                $("#prod_img"+(i+1)+" img").attr("srcset",sel_srcset);
+                var sel_showpage = sel_combine.s_showpage;
+                console.log(sel_showpage);
+                if (sel_showpage === 'Y') {
+                    $("#prod_img"+(i+1)).attr("target", '_blank');
+                    $("#prod_img"+(i+1)).attr("href", sel_prod_url);
+                } else {
+                    $("#prod_img"+(i+1)).attr("target", '_self');
+                    $("#prod_img"+(i+1)).attr("href", '');
+                }
+                
+            }     
+        });
+            
+    });
+    reCountQty();
+    antiEbookMultiSelect();
+}
+
+function reCountQty(){
+    $("#selector_div ul li").each(function(i){
+        var obj_select = "#selector"+(i+1);
+        var prev = '';
+        
+        $(obj_select).change(function(opt) {
+            var text = "(數量不足)";
+            // 找有幾個區域
+            var areas = $("#selector_div ul li .count b"); 
+            var area_count = areas.length;
+            
+            var val = $(obj_select+' option').eq(this.selectedIndex).val();
+            var selected = '';
+            
+            if (val !== '' && val !== undefined) {
+                // 扣除當前所選之店內碼的 qty
+                selected = JSON.parse(val);
+                var item = selected.item;
+                for (var j = 1; j <= area_count; j++) {
+                    // 看其他區域有沒有一樣的店內碼
+                    var selector_id = $("#selector"+item+j);
+                    var tmp = selector_id.val();
+                    if (tmp === '' || tmp === undefined) {
+                        continue;
+                    }
+                    // 相同的店內碼庫存扣掉已被選擇的區域數量
+                    var same = JSON.parse(tmp);
+                    same.recount_qty = parseInt(same.recount_qty) - parseInt(areas[j-1].innerHTML);
+                    selector_id.val(JSON.stringify(same));
+                    
+                    // 檢核是否庫存不足，要關閉選項
+                    var condition1 = (j !== (i+1)); // 當前區域不用檢核
+                    var condition2 = true;
+                    var tmp2 = $("#selector"+j).val();
+                    if (tmp2 !== '' && tmp2 !== undefined) {
+                        var selector = JSON.parse(tmp2);
+                        // 已選擇的下拉選單與當前店內碼相同，也不用檢核
+                        condition2 = (selector.item !== item);
+                    }
+                    // 庫存量是否足夠
+                    var condition3 = parseInt(same.recount_qty) < parseInt(areas[j-1].innerHTML);  
+                    if (condition1 && condition2 && condition3) {
+                        selector_id.attr('disabled', true);
+                        selector_id.text(text + $("#selector"+item+j).text());
+                    } else {
+                        selector_id.attr('disabled', false);
+                        selector_id.text($("#selector"+item+j).text().replace(text, ''));
+                    }                    
+                }
+            }
+            
+            // 恢復前一個所選之店內碼的 qty
+            if (prev !== '') {
+                var item = prev.item;
+                for (var j = 1; j <= area_count; j++) {
+                    // 看其他區域有沒有一樣的店內碼
+                    var selector_id = $("#selector"+item+j);
+                    var tmp = selector_id.val();
+                    if (tmp === '' || tmp === undefined) {
+                        continue;
+                    }
+                    // 相同的店內碼庫存回加已被更換的區域數量
+                    var same = JSON.parse(tmp);
+                    same.recount_qty = parseInt(same.recount_qty) + parseInt(areas[j-1].innerHTML);
+                    selector_id.val(JSON.stringify(same));
+                    
+                    // 檢核是否庫存不足，要關閉選項
+                    var condition1 = (j !== (i+1)); // 當前區域不用檢核
+                    var condition2 = true;
+                    var tmp2 = $("#selector"+j).val();
+                    if (tmp2 !== '' && tmp2 !== undefined) {
+                        var selector = JSON.parse(tmp2);
+                        // 已選擇的下拉選單與當前店內碼相同，也不用檢核
+                        condition2 = (selector.item !== item);
+                    }
+                    // 庫存量是否足夠
+                    var condition3 = parseInt(same.recount_qty) < parseInt(areas[j-1].innerHTML);  
+                    if (condition1 && condition2 && condition3) {
+                        selector_id.attr('disabled', true);
+                        selector_id.text(text + $("#selector"+item+j).text());
+                    } else {
+                        selector_id.attr('disabled', false);
+                        selector_id.text($("#selector"+item+j).text().replace(text, ''));
+                    }                    
+                }
+            }
+            
+            prev = selected;
+        });
+            
+    });
+}
+
+// 電子書雜只可購買一次，不同區域若有相同店內碼則 disable
+function antiEbookMultiSelect(){
+    $("#selector_div ul li").each(function(i){
+        var obj_select = "#selector"+(i+1);
+        var prev = '';
+        
+        $(obj_select).change(function() {
+            // 找有幾個區域
+            var areas = $("#selector_div ul li .count b"); 
+            var area_count = areas.length;
+            
+            var val = $(obj_select+' option').eq(this.selectedIndex).val();
+            var selected = '';
+            
+            if (val != '' && val !== undefined) {
+                selected = JSON.parse(val);
+                var item = selected.item; // 店內碼
+                var cat = item.substring(0, 3); // 業種
+                // 電子書雜才需要檢核
+                if (cat !== 'E05' && cat !== 'E06') {
+                    return;
+                }
+                
+                for (var j = 1; j <= area_count; j++) {
+                    // 看其他區域有沒有一樣的店內碼
+                    var selector_id = $("#selector"+item+j);
+                    var tmp = selector_id.val();
+                    if (tmp === '' || tmp === undefined) {
+                        continue;
+                    }
+                    var same = JSON.parse(tmp);
+                    // 當前區域不用檢核
+                    var condition1 = (j !== (i+1));
+                    // 其他區域有一樣的店內碼不可再選
+                    var condition2 = (same.item === item);
+                    if (condition1 && condition2) {
+                        selector_id.attr('disabled', true);
+                    } else {
+                        selector_id.attr('disabled', false);
+                    }             
+                }
+            }
+            
+            if (prev != '') {
+                var item = prev.item;
+                for (var j = 1; j <= area_count; j++) {
+                    // 看其他區域有沒有一樣的店內碼
+                    var selector_id = $("#selector"+item+j);
+                    var tmp = selector_id.val();
+                    if (tmp === '' || tmp === undefined) {
+                        continue;
+                    }
+                    var same = JSON.parse(tmp);
+                    // 當前區域不用檢核
+                    var condition1 = (j !== (i+1));
+                    // 其他區域有一樣的店內碼恢復可選
+                    var condition2 = (same.item === item);
+                    if (condition1 && condition2) {
+                        selector_id.attr('disabled', false);
+                    }
+                }
+            }
+            
+            prev = selected;
+        });
+            
+    });
+}

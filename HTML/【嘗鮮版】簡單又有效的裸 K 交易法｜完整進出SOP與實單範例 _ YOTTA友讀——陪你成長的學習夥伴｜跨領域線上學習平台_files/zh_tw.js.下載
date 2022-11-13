@@ -1,0 +1,725 @@
+(function(global){var Language = {};
+
+Language.pluralFormFunction = function (n) {
+		return 'other';
+	};
+
+
+Language.bubble = Language.bubble || {};
+
+Language.bubble.attention_grabber = {
+	"message": "聊天醒目提示"
+};
+
+
+Language.chat = Language.chat || {};
+
+Language.chat.Warning = {
+	"message": "警告"
+};
+Language.chat.accept_call = {
+	"message": "接受"
+};
+Language.chat.active = {
+	"message": "活躍的"
+};
+Language.chat.agent_profile_image = {
+	"message": "專員個人檔案圖片"
+};
+Language.chat.agent_ringing = {
+	"message": "來電"
+};
+Language.chat.all_conversations = {
+	"message": "查看所有對話"
+};
+Language.chat.call_end_details = {
+	"message": "開始於 #startedOn 和持續 #duration",
+	"vars": [
+		"startedOn",
+		"duration"
+	]
+};
+Language.chat.call_error_load = {
+	"message": "無法載入電話資訊"
+};
+Language.chat.call_started_on = {
+	"message": "開始於 #startedOn",
+	"vars": [
+		"startedOn"
+	]
+};
+Language.chat.chatEnded = {
+	"message": "您的聊天已結束"
+};
+Language.chat.chat_icon = {
+	"message": "聊天圖示"
+};
+Language.chat.chat_qm = {
+	"message": "聊聊嗎?"
+};
+Language.chat.chat_text = {
+	"message": "聊聊"
+};
+Language.chat.close_icon = {
+	"message": "關閉圖示"
+};
+Language.chat.completed_call = {
+	"message": "通話結束"
+};
+Language.chat.conversation_ended_on = {
+	"message": "Conversation ended on"
+};
+Language.chat.decline_call = {
+	"message": "拒絕"
+};
+Language.chat.defaultName = {
+	"message": "你 (更改名稱)"
+};
+Language.chat.departmentIsAway = {
+	"message": "部門 #strongStart #departmentName #strongEnd 是目前離開了。",
+	"vars": [
+		"departmentName",
+		"strongStart",
+		"strongEnd"
+	]
+};
+Language.chat.departmentIsOffline = {
+	"message": "部門#strongStart #departmentName #strongEnd 正處於離線狀態。你可能由另一個部門送達。",
+	"vars": [
+		"departmentName",
+		"strongStart",
+		"strongEnd"
+	]
+};
+Language.chat.download = {
+	"message": "下載"
+};
+Language.chat.downloadFile = {
+	"message": "下載檔案"
+};
+Language.chat.dragDropText = {
+	"message": "請將要上傳的檔案拖至到此處"
+};
+Language.chat.emoji_error_load = {
+	"message": "無法載入表情符號"
+};
+Language.chat.error_title = {
+	"message": "錯誤"
+};
+Language.chat.failed = {
+	"message": "失敗"
+};
+Language.chat.generalUploadError = {
+	"message": "\"#fileName\", 請重新上傳",
+	"vars": [
+		"fileName"
+	]
+};
+Language.chat.generalUploadErrorLabel = {
+	"message": "無法上傳文件"
+};
+Language.chat.goToLatest = {
+	"message": "前往最新對話"
+};
+Language.chat.hideButton = {
+	"message": "隱藏聊天窗口"
+};
+Language.chat.incoming_call_message = {
+	"message": "從 #name 的來電",
+	"vars": [
+		"name"
+	]
+};
+Language.chat.insert_emoji = {
+	"message": "插入表情符號"
+};
+Language.chat.justNow = {
+	"message": "現在加入"
+};
+Language.chat.limit2 = {
+	"message": "行動裝置上傳最大檔案大小為 2 MB ，請上傳較小的檔。"
+};
+Language.chat.limit50 = {
+	"message": "最大檔案大小為 50 MB，請上傳較小的檔。"
+};
+Language.chat.message_not_delivered = {
+	"message": "訊息未送達。請點擊重新發送"
+};
+Language.chat.message_too_long = {
+	"message": "訊息不能超過5,000個字元"
+};
+Language.chat.missed_agent = {
+	"message": "你的電話被錯過了"
+};
+Language.chat.missed_visitor = {
+	"message": "你錯過一通電話"
+};
+Language.chat.missed_visitor_messagePreview = {
+	"message": "您錯過一通電話"
+};
+Language.chat.mobileName = {
+	"message": "你"
+};
+Language.chat.newChat = {
+	"message": "開始新的聊天"
+};
+Language.chat.newMessages = {
+	"message": "新消息"
+};
+Language.chat.new_conversation = {
+	"message": "新對話"
+};
+Language.chat.notificationTitle = {
+	"message": "通知"
+};
+Language.chat.ongoing_call = {
+	"message": "通話中"
+};
+Language.chat.past = {
+	"message": "#time 前",
+	"vars": [
+		"time"
+	]
+};
+Language.chat.pasted_image_title = {
+	"message": "#dateTime 上的貼圖",
+	"vars": [
+		"dateTime"
+	]
+};
+Language.chat.profile_prechat_text = {
+	"message": "請填寫下面的表單讓我們開始聊天吧。"
+};
+Language.chat.rejected_call = {
+	"message": "你拒接此通電話"
+};
+Language.chat.remove_rate = {
+	"message": "您刪除了這次談話的評價."
+};
+Language.chat.resend = {
+	"message": "重新發送"
+};
+Language.chat.retry = {
+	"message": "請重試。"
+};
+Language.chat.return_to_live_chat = {
+	"message": "Return to live chat"
+};
+Language.chat.say_something = {
+	"message": "在這裡輸入，然後按送出。"
+};
+Language.chat.screen_share_error = {
+	"message": "無法使用共享螢幕"
+};
+Language.chat.send_mail = {
+	"message": "發送郵件"
+};
+Language.chat.sent_file = {
+	"message": "傳送一個檔案"
+};
+Language.chat.today_time = {
+	"message": "今天，#time",
+	"vars": [
+		"time"
+	]
+};
+Language.chat.tryAgain = {
+	"message": "再試一次。"
+};
+Language.chat.unanswered = {
+	"message": "尚未回覆"
+};
+Language.chat.uploading = {
+	"message": "上傳中..."
+};
+Language.chat.video_call_error = {
+	"message": "無法使用視訊電話"
+};
+Language.chat.visitor_ringing = {
+	"message": "呼叫中..."
+};
+Language.chat.voice_call_error = {
+	"message": "無法使用語音電話"
+};
+Language.chat.we_are_live = {
+	"message": "我們在線並隨時可以開始和您聊天。說點什麼來開始線上聊天吧。"
+};
+
+
+Language.days = Language.days || {};
+
+Language.days['0'] = {
+	"message": "星期日"
+};
+Language.days['1'] = {
+	"message": "星期一"
+};
+Language.days['2'] = {
+	"message": "星期二"
+};
+Language.days['3'] = {
+	"message": "星期三"
+};
+Language.days['4'] = {
+	"message": "星期四"
+};
+Language.days['5'] = {
+	"message": "星期五"
+};
+Language.days['6'] = {
+	"message": "星期六"
+};
+
+
+Language.form = Language.form || {};
+
+Language.form.CancelButton = {
+	"message": "取消"
+};
+Language.form.CloseButton = {
+	"message": "關閉"
+};
+Language.form.DepartmentsErrorMessage = {
+	"message": "請選擇要聯絡的部門。"
+};
+Language.form.DepartmentsPlaceholder = {
+	"message": "選擇部門…"
+};
+Language.form.EmailErrorMessage = {
+	"message": "無效的電子信箱。"
+};
+Language.form.EmailPlaceholder = {
+	"message": "電子郵件地址"
+};
+Language.form.EmailTranscriptFormMessage = {
+	"message": "請完成表單，以便我們將對話紀錄發送到你的信箱。"
+};
+Language.form.EmailTranscriptSuccess = {
+	"message": "已傳送電子郵件副本請求。"
+};
+Language.form.EmailTranscriptTo = {
+	"message": "將交談記錄發送到信箱"
+};
+Language.form.EndChatMessage = {
+	"message": "謝謝你和我們聊天。您可以隨時開始新的聊天會話或輸入您的電子郵件, 並將此對話的記錄發送到您的收件匣。"
+};
+Language.form.EndChatMessage2 = {
+	"message": "感謝您與我們聊天，歡迎開始新的聊天對話。"
+};
+Language.form.EndChatTitle = {
+	"message": "確定要結束交談？"
+};
+Language.form.MessagePlaceholder = {
+	"message": "您的訊息…"
+};
+Language.form.NameErrorMessage = {
+	"message": "請填寫名稱。"
+};
+Language.form.NameFormMessage = {
+	"message": "請變更名稱以便識別。"
+};
+Language.form.OfflineFormMessage = {
+	"message": "請填寫下方表單，我們會盡快與您聯絡。"
+};
+Language.form.OfflineMessageNotSent = {
+	"message": "您的消息未送達, 請重試"
+};
+Language.form.OfflineMessageSent = {
+	"message": "您的消息已成功發送!"
+};
+Language.form.PhoneErrorMessage = {
+	"message": "無效的聯絡電話"
+};
+Language.form.PreChatFormMessage = {
+	"message": "在與我們交談前，請務必完成表單。"
+};
+Language.form.PreChatFormMessageProfile = {
+	"message": "在開始交談前，請填寫下列表單。"
+};
+Language.form.QuestionPlaceholder = {
+	"message": "需要什麼協助…"
+};
+Language.form.RequiredErrorMessage = {
+	"message": "此欄位爲必填"
+};
+Language.form.SaveButton = {
+	"message": "儲存"
+};
+Language.form.SendButton = {
+	"message": "傳送"
+};
+Language.form.SendMessage = {
+	"message": "發送訊息"
+};
+Language.form.StartChatButton = {
+	"message": "開始交談"
+};
+Language.form.SubmitButton = {
+	"message": "送出"
+};
+Language.form.SubmittedFrom = {
+	"message": "從這裡傳來"
+};
+Language.form.SubmittingProcess = {
+	"message": "送出中"
+};
+Language.form.TranscriptMessage = {
+	"message": "請隨時輸入您的電子郵件, 並將此對話的記錄發送到您的收件匣。"
+};
+Language.form.any = {
+	"message": "任何"
+};
+Language.form.chatEnded = {
+	"message": "您的聊天已結束"
+};
+Language.form.department = {
+	"message": "部門"
+};
+Language.form.email = {
+	"message": "電子信箱"
+};
+Language.form.errorSaving = {
+	"message": "無法儲存，請再試一次。"
+};
+Language.form.message = {
+	"message": "訊息"
+};
+Language.form.name = {
+	"message": "名稱"
+};
+Language.form.sendAgain = {
+	"message": "再次發送"
+};
+Language.form.visitButton = {
+	"message": "前往 tawk.to"
+};
+
+
+Language.home = Language.home || {};
+
+Language.home.banner_image = {
+	"message": "橫幅圖片"
+};
+Language.home.chat_button = {
+	"message": "新對話"
+};
+Language.home.chat_input = {
+	"message": "在此輸入並按下 enter 鍵…"
+};
+Language.home.heading_main = {
+	"message": "你好 👋"
+};
+Language.home.heading_sub = {
+	"message": "需要幫助嗎？搜尋我們的幫助中心尋找答案或開始對話："
+};
+Language.home.kb_search = {
+	"message": "搜尋答案"
+};
+Language.home.logo_image = {
+	"message": "標誌圖片"
+};
+
+
+Language.kb = Language.kb || {};
+
+Language.kb.article_image = {
+	"message": "文章圖片"
+};
+Language.kb.article_rating = {
+	"message": "此篇文章有幫助嗎？"
+};
+Language.kb.article_rating_count = {
+	"message": "#totalVotes 個中的 #totalLikes 個喜歡此篇文章",
+	"vars": [
+		"totalLikes",
+		"totalVotes"
+	]
+};
+Language.kb.author_profile_image = {
+	"message": "作者個人檔案圖片"
+};
+Language.kb.clear_search = {
+	"message": "清除搜尋"
+};
+Language.kb.downvote_rating_button = {
+	"message": "No"
+};
+Language.kb.help_center = {
+	"message": "幫助中心"
+};
+Language.kb.negative_rating = {
+	"message": "負評"
+};
+Language.kb.positive_rating = {
+	"message": "好評"
+};
+Language.kb.recent_searches = {
+	"message": "最近搜尋"
+};
+Language.kb.search_fail_description = {
+	"message": "請重試"
+};
+Language.kb.search_fail_title = {
+	"message": "無搜尋結果"
+};
+Language.kb.search_placeholder = {
+	"message": "搜尋答案"
+};
+Language.kb.search_results = {
+	"message": "搜尋結果"
+};
+Language.kb.show_all_results = {
+	"message": "顯示所有結果 (#num)",
+	"vars": [
+		"num"
+	]
+};
+Language.kb.submit_search = {
+	"message": "送出搜尋"
+};
+Language.kb.upvote_rating_button = {
+	"message": "Yes"
+};
+Language.kb.view_full = {
+	"message": "查看完整內容"
+};
+
+
+Language.menu = Language.menu || {};
+
+Language.menu.add_chat_to_your_website = {
+	"message": "Add Chat to your website"
+};
+Language.menu.change_name = {
+	"message": "變更名稱"
+};
+Language.menu.email_transcript = {
+	"message": "將紀錄發送到信箱"
+};
+Language.menu.end_chat_session = {
+	"message": "結束此聊天會話"
+};
+Language.menu.popout_widget = {
+	"message": "彈出小工具"
+};
+Language.menu.sound_off = {
+	"message": "關閉聲音"
+};
+Language.menu.sound_on = {
+	"message": "開啟聲音"
+};
+
+
+Language.months = Language.months || {};
+
+Language.months['0'] = {
+	"message": "1 月"
+};
+Language.months['1'] = {
+	"message": "2 月"
+};
+Language.months['10'] = {
+	"message": "十一月"
+};
+Language.months['11'] = {
+	"message": "十二月"
+};
+Language.months['2'] = {
+	"message": "三月"
+};
+Language.months['3'] = {
+	"message": "四月"
+};
+Language.months['4'] = {
+	"message": "五月"
+};
+Language.months['5'] = {
+	"message": "六月"
+};
+Language.months['6'] = {
+	"message": "七月"
+};
+Language.months['7'] = {
+	"message": "八月"
+};
+Language.months['8'] = {
+	"message": "九月"
+};
+Language.months['9'] = {
+	"message": "十月"
+};
+
+
+Language.notifications = Language.notifications || {};
+
+Language.notifications.dismiss_alert = {
+	"message": "解除警報"
+};
+Language.notifications.maximum_file_upload_warning = {
+	"message": "對不起, 檔案傳輸一次只能傳輸 #limitFileNumber 個檔。請再次嘗試() :",
+	"vars": [
+		"limitFileNumber"
+	]
+};
+Language.notifications.maximum_size_upload_warning = {
+	"message": "對不起, 每個檔的檔案大少限制為 #limitFileSize 。請壓縮以下檔案，然後重試。",
+	"vars": [
+		"limitFileSize"
+	]
+};
+Language.notifications.reconnecting = {
+	"message": "重新連線中"
+};
+Language.notifications.retry = {
+	"message": "請重試"
+};
+
+
+Language.overlay = Language.overlay || {};
+
+Language.overlay.cookiesOff = {
+	"message": "不能使用此聊天，因為您的瀏覽器的 cookie 功能處於關閉狀態。請在瀏覽器設置中打開它並刷新您的瀏覽器。"
+};
+Language.overlay.inactive = {
+	"message": "點擊這裡重新開始聊天"
+};
+Language.overlay.maintenance = {
+	"message": "聊天室維護中"
+};
+Language.overlay.tawkContent = {
+	"message": "來自 tawk.to－完全免費，讓你可以和網站的造訪者互動的通訊應用程式。要到 tawk.to 看看嗎？"
+};
+
+
+Language.rollover = Language.rollover || {};
+
+Language.rollover.back = {
+	"message": "返回"
+};
+Language.rollover.chatMenu = {
+	"message": "功能表"
+};
+Language.rollover.emailTranscriptOption = {
+	"message": "將紀錄發送到信箱"
+};
+Language.rollover.end = {
+	"message": "結束聊天"
+};
+Language.rollover.knowledgeBase = {
+	"message": "知識庫"
+};
+Language.rollover.maximize = {
+	"message": "最大化"
+};
+Language.rollover.minimize = {
+	"message": "最小化"
+};
+Language.rollover.negativeRating = {
+	"message": "給予本次談話一個差評 -1"
+};
+Language.rollover.popOut = {
+	"message": "彈出"
+};
+Language.rollover.positiveRating = {
+	"message": "給予本次談話一個好評 +1"
+};
+Language.rollover.rateChat = {
+	"message": "為這個聊天評分"
+};
+Language.rollover.resendMessage = {
+	"message": "重新傳送訊息"
+};
+Language.rollover.resize = {
+	"message": "調整大小"
+};
+Language.rollover.screenShare = {
+	"message": "共享螢幕"
+};
+Language.rollover.uploadFile = {
+	"message": "上傳檔案"
+};
+Language.rollover.videoCall = {
+	"message": "視訊通話"
+};
+Language.rollover.voiceCall = {
+	"message": "語音通話"
+};
+
+
+Language.routes = Language.routes || {};
+
+Language.routes.all_agents = {
+	"message": "所有專員"
+};
+Language.routes.conversations = {
+	"message": "對話"
+};
+Language.routes.load_more = {
+	"message": "載入更多"
+};
+
+
+Language.status = Language.status || {};
+
+Language.status.away = {
+	"message": "離開"
+};
+Language.status.offline = {
+	"message": "離線"
+};
+Language.status.online = {
+	"message": "線上"
+};
+
+
+
+
+Language.chat = Language.chat || {};
+
+Language.chat.hours = {
+	"pluralVars": [
+		"num"
+	],
+	"message": {
+		"other": "#num 小時"
+	}
+};
+Language.chat.messageQueuedText = {
+	"pluralVars": [
+		"t"
+	],
+	"message": {
+		"other": "預估還需等待 #strongStart #t 分鐘 #strongEnd"
+	},
+	"vars": [
+		"strongStart",
+		"strongEnd"
+	]
+};
+Language.chat.minutes = {
+	"pluralVars": [
+		"num"
+	],
+	"message": {
+		"other": "#num 分鐘"
+	}
+};
+Language.chat.newMessage = {
+	"pluralVars": [
+		"num"
+	],
+	"message": {
+		"other": "#num 則新訊息"
+	}
+};
+Language.chat.seconds = {
+	"pluralVars": [
+		"num"
+	],
+	"message": {
+		"other": "#num 秒"
+	}
+};
+
+
+global.$_Tawk.language = Language;})(window);

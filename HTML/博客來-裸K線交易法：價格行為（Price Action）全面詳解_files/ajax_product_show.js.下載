@@ -1,0 +1,418 @@
+function ajax_product_show(opt_module_id, opt, flag) {
+    var module_id = "";//模組編碼參數
+    var class_name = "";//class fun name
+    var source_var = new Array();//參數
+    var view = "";//template
+    var arr_index = new Array();//ajax開關 空:取 1:不取
+    var self = this;
+    var c_type = "";
+
+    //取得商品資訊//
+    this.show = function(key) {
+        if (source_var != false) {
+            $.ajax({url: "//www.books.com.tw/product_show/" + class_name + "/" + source_var[key] + "/" + view, type: "get", dataType: "html",
+                success: function(msg) {
+                    switch (class_name) {
+                        case "getProdCartInfoAjax":
+                        case "getGiftInfoAjax1":
+                        case "getkingSixMAjax":
+                        case "getAlsoBuyNewAjax":
+                        case "getPopupProdAjax":
+                        case "getItemSimilarityAjax":
+                        case "getTodaySpecial_dept":
+                        case "getTodaySpecial_prod_M":
+                        case "getTodaySpecial_prod_P":
+                        case "getTodaySpecial_book":
+                        case "getAvRealTopProdsAjax":
+                        case "getCountdownProdAjax":
+                        case "getProdRentInfoAjax":
+                            $("#" + module_id).html(msg);
+                            break;
+                        case "getConsumerAjax":
+                          $("#" + module_id + "-" + c_type).html(msg);
+                           break;
+                        case "getCommentAjax":
+                            // 會員評鑑有回傳資料
+                            switch (source_var[1]) {
+                                case 'M':
+                                    $("#" + module_id + "-" + c_type).append(msg);
+                                    break;
+                                default:
+                                    $("#" + module_id + "-" + c_type).html(msg);
+                                    break;
+                              }
+                          break;
+                        case "getBrowseItemsAjax":
+                            // 瀏覽紀錄有回傳資料
+                            switch (source_var[1]) {
+                                case 'M':
+                                    if(msg == false) {
+                                        msg = '無瀏覽紀錄';
+                                    }
+                                default:
+                                    $("#" + module_id).html(msg);
+                                    break;
+                              }
+                          break;
+
+                        case "getShoppingMoneyAjax":
+                            // === OP START D ===
+                            // $("#div-" + module_id + '-' + key).html(msg);
+                            // === OP END D ===
+                            break;
+                        case "getPersonaIndexAjax":
+                        case "getPublisherIndexAjax":
+                        case "getPublistIndexAjax":
+                            $('#pubIdxResult h3.hide').nextAll().remove();
+                            $('#pubIdxResult h3.hide').after(msg);
+                            break;
+                        case "setEbkReadercollectAjax":
+                            if(msg != ''){
+                                location.href="https://cart.books.com.tw/member/login?url=//www.books.com.tw/products/"+msg;
+                            }else{
+                                alert('試閱本已派送至電子書櫃');
+                            }
+                            break;
+                        case 'getMemberiCouponAjax':
+                            if(msg.length === 10){
+                                location.href="https://cart.books.com.tw/member/login?url=//www.books.com.tw/products/"+msg;
+                            } else {
+                                $("#" + module_id).html(msg);
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                }
+            });
+        }
+        return;
+    }
+    //確認商品庫存
+    //由於回傳格式非html，獨立出來寫
+    this.checkstock = function(key) {
+        if (source_var != false) {
+            $.ajax({url: "//www.books.com.tw/product_show/" + class_name + "/" + source_var[key] + "/" + view, type: "get", dataType: "json",
+                success: function(data) {
+                    if (data != false) {
+                        var num = data.length;
+                        var str = "";
+                        for (i = 0; i < num; i++) {
+                            if (data[i][1] == false) {//無庫存反白並加上"無庫存字樣"
+                                 switch (source_var[1]) {
+                                     case 'M':
+                                        $("#size_" + module_id + "_" + data[i][0]).addClass("disabled");
+                                        break;
+                                     default:
+                                        $("#" + module_id + "_" + data[i][0]).addClass("sell_out");
+                                        str = $("#" + module_id + "_" + data[i][0]).text() + " - 無庫存";
+                                        $("#" + module_id + "_" + data[i][0]).text(str);
+                                        break;
+                                 }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        return;
+    }
+    //組合商品內容區+購物車區塊
+    this.getSetProdChild = function(){
+        if (source_var !== false) {
+            console.log("3. //www.books.com.tw/product_show/" + class_name + "/" + source_var[0] + "/" + view);
+            var device_source = (typeof source_var[3] != 'undefined') ? source_var[3] : 'P';
+            $.ajax({url: "//www.books.com.tw/product_show/" + class_name + "/" + source_var[0] + "/" + view, type: "get", dataType: "json",
+                success: function(data) {
+                    //console.log(data);
+                    var parent_item = data.parent_item;
+                    if (data != false) {
+                        //購物車區
+                        if(data.cart_info!=''){
+                            var obj_cart = "#getSetProdCartInfoAjax_"+parent_item;
+                            $(obj_cart).html(data.cart_info);
+                            clickCartBtn(parent_item, device_source);
+                        }
+                        //組合商品內容區
+                        if(data.combine_html!=''){
+                            $("#selector_div").html(data.combine_html);
+                            changeSetProdDropDownMenu();
+                        }
+                    }
+                }
+            });
+        }
+        return;
+    }
+    
+    this.getBooks66Item = function(key) {
+        if (source_var != false) {
+            $.ajax({url: "//www.books.com.tw/web_show/" + class_name + "/" + module_id + "/" + source_var + "/" + view, type: "get", dataType: "html",
+                success: function(data) {
+                    if (data != false) {
+                        $("#" + module_id).html(data);
+                    }
+                }
+            });
+        }
+        return;
+    }
+
+    this.mouseOver = function(key) {
+        if (arr_index[key] != 1 && source_var[key] != false) {
+            self.show(key);
+            arr_index[key] = 1;
+        }
+        $("#div-" + module_id + '-' + key).show();
+        return;
+    }
+
+    this.mouseOut = function(key) {
+        $("#div-" + module_id + '-' + key).hide();
+        return;
+    }
+
+    //bind事件
+    this.bindEvent = function() {
+        switch (class_name) {
+            case "getShoppingMoneyAjax":
+                $("." + module_id).bind("mouseover", function() {
+                    var key = this.id.split("-");
+                    self.mouseOver(key[2]);
+                    return;
+                });
+
+                $("." + module_id).bind("mouseout", function() {
+                    var key = this.id.split("-");
+                    self.mouseOut(key[2]);
+                    return;
+                });
+
+                break;
+            default:
+                break;
+        }
+    }
+
+    this.follow = function(){
+        if (source_var != false) {
+            ap = source_var[1];
+            if(ap.indexOf(':')!=-1){
+                var apAry = ap.split(':');
+                ap = encodeURIComponent(apAry[0]) + ':' + apAry[1];
+            }else{
+                ap = encodeURIComponent(ap);
+            }
+            var device_source = (typeof source_var[3] != 'undefined')?source_var[3]:'P';
+            $.ajax({url: '//www.books.com.tw/product_show/' + class_name + '/' + source_var[0] + '/' + view + '/?d=' + ap + '&url=' + source_var[2], type: 'get', dataType: 'html',
+                success: function(msg) {
+                    if($.trim(msg)!=''){
+                        var html='<script>';
+                        var data = $.parseJSON(msg).results;
+                        //console.log(data);
+                        if(typeof data.followBtn1 != 'undefined' && typeof data.followBtn1.value != 'undefined'){
+                            if(device_source == 'M' && $('#trace_btn1').length>0 && $('#trace_btn1').data('icontype')=='follow_mag_m'){
+                              $('#trace_btn1').html('<a href="javascript:void(0);"><i class="icon-bell"></i>'+data.followBtn1.value_m+'</a>');
+                              if(data.followBtn1.is_trace){
+                                $('#trace_btn1 a').attr('href','https://myaccount.books.com.tw/myaccount/myaccount/getFollow/3');
+                              }else if(data.isLogin==false && data.flag!='INIT'){
+                                window.location.href="https://cart.books.com.tw/member/login?url="+encodeURIComponent(window.location.href);
+                              }else{
+                                $("#trace_btn1 a").bind("click", function(){
+                                    var opt_module_id = data.li_id;//模組編碼參數
+                                    var opt = new Array(3);//參數資料變數
+                                    opt[0] = "setFollowMagAjax"; //class name 
+                                    opt[1] = new Array();
+                                    opt[1][0] = data.item+":"+data.li_id+":"+data.view;
+                                    opt[1][1] = data.data1_for_js;
+                                    opt[1][2] = window.location.href;
+                                    opt[1][3] = 'M';
+                                    opt[2] = data.view;    
+                                    var m_mag_go_follow = new ajax_product_show(opt_module_id,opt);
+                                });
+                              }
+                              return true;
+                            }else{
+                              html += "$('#trace_btn1 span.trace_txt').html('" + data.followBtn1.value + ((device_source == 'M' && data.followBtn1.is_trace == 1)?'<i class="icon-bell"></i>':'') + "');";
+                            }
+                        }
+                        if(typeof data.followBtn2 != 'undefined' && typeof data.followBtn2.value != 'undefined'){
+                            html += "$('#trace_btn2 span.trace_txt').html('" + data.followBtn2.value + ((device_source == 'M' && data.followBtn2.is_trace == 1)?'<i class="icon-desktop"></i>':'') + "');";
+                        }
+                        if(data.item=='' && typeof data.followBtn1!='undefined'){//for 雜誌索引頁
+                            html += "$('#loginNotice').css('display','" + (data.isLogin?'none':'block') + "');";
+                        }
+                        if(data.item=='' && typeof data.followBtn2!='undefined'){//for 單一出版社頁
+                            html += "$('#loginNotice').css('display','" + (data.isLogin?'none':'block') + "');";
+                        }
+                        if(data.flag=='INIT'){
+                            html += "\n\
+                            $('#trace_btn1').attr('href',\"javascript:setFollow('" + data.ajax_class1 + "\','" + data.data1_for_js + "');\");\n\
+                            $('#trace_btn2').attr('href',\"javascript:setFollow('" + data.ajax_class2 + "\','" + data.data2_for_js + "');\");";
+                        }else{
+                            var hrefStr = targetStr='';
+                            if(typeof data.followBtn1 != 'undefined' && typeof data.followBtn1.href != 'undefined'){
+                                hrefStr = data.followBtn1.href;
+                                if(typeof data.followBtn1.target != 'undefined') targetStr = data.followBtn1.target;
+                            }else if(typeof data.followBtn2 != 'undefined' && typeof data.followBtn2.href != 'undefined'){
+                                hrefStr = data.followBtn2.href;
+                                if(typeof data.followBtn2.target != 'undefined') targetStr = data.followBtn2.target;
+                            }
+
+                            if(hrefStr!=''){
+                                if(targetStr!=''){
+                                    html += "window.open('"+hrefStr+"','"+targetStr+"');";
+                                }else{
+                                    html += "window.location.href='"+hrefStr+"'";
+                                }
+                                //html = '<a href="' + hrefStr + '" id="traceLink"' + ((targetStr!='')?' target="_blank"':'') + '>link</a>';
+                                //html += "<script>$('a#traceLink').click();</script>";
+                            }else{
+                                if(data.flag=='GET'){
+                                    var trace=traced='';
+                                    var i=0;
+                                    var authorAry = [];
+                                    var followed = [];
+                                    for(var k in data.authorAry) {
+                                        authorAry[k] = data.authorAry[k];
+                                    }
+                                    if(data.followed){
+                                        html += "$('#edit_traced_area').show();\n\
+                                        $('#editTrace').attr('href',\"javascript:editTrace('" + data.myaccUrl + "\');\");";
+                                        for(var k in data.followed) {
+                                            followed[k] = data.followed[k];
+                                        }
+                                    }else{
+                                        html += "$('#edit_traced_area').hide();";
+                                    }
+
+                                    for(var k in authorAry){
+                                        if(device_source == 'M'){
+                                            i++;
+                                            trace += '<tr><td><input type="checkbox" id="trace'+ i +'" name="author" value="'+ authorAry[k] +'" ' + ($.inArray(authorAry[k],followed) !==-1?'checked="checked" disabled="disabled"':'') + '/><label for="trace'+ i +'">'+ authorAry[k] +'</label></td></tr>';
+                                        }else{
+                                            if($.inArray(authorAry[k],followed) !==-1){
+                                                traced += '<li>' + authorAry[k] + '</li>';
+                                            }else{
+                                                i++;
+                                                trace += '<li><input type="checkbox" id="trace'+ i +'" name="author" value="'+ authorAry[k] +'" /><label for="trace'+ i +'">'+ authorAry[k] +'</label></li>';
+                                            }
+                                        }
+                                    }
+
+                                    html += "$('#list_trace').html('" + trace + "');\n\
+                                    $('#list_traced').html('" + traced + "');\n\
+                                    $('#trace_box').show();";
+                                }else{ //SET
+                                    if(data.rsSet.err_count>0){
+                                        html += "alert('" + data.rsSet.err_msg + "');";
+                                    }
+                                }
+                            }
+                        }
+                        html += '</script>';
+                        $("#" + module_id).html(html);
+                    }
+                }
+            });
+        }
+    }
+
+    this.execProc = function() {
+        switch (class_name) {
+            case "getProdCartInfoAjax":
+                $.getScript("https://jci.book.com.tw/jss/books/add_product.js?v=2022041802");
+                self.show(0);
+                break;
+            case "getGiftInfoAjax1":
+            case "getkingSixMAjax":
+            case "getAlsoBuyNewAjax":
+            case "getConsumerAjax":
+            case "getCommentAjax":
+            case "getPopupProdAjax":
+            case "getPublisherIndexAjax":
+            case "getTodaySpecial_dept":
+            case "getTodaySpecial_prod_M":
+            case "getTodaySpecial_prod_P":
+            case "getTodaySpecial_book":
+            case "setEbkReadercollectAjax":
+            case "setClickQtyAjax":
+            case "getPublisherIndexAjax":
+            case "getTodaySpecial_dept":
+            case "getTodaySpecial_book":
+            case "getPublistIndexAjax":
+            case "getPersonaIndexAjax":
+            case "getAvRealTopProdsAjax":
+            case "getMemberiCouponAjax":
+            case "getProdRentInfoAjax":
+            case "setClickVideoAjax":
+                self.show(0);
+                break;
+            case "getShoppingMoneyAjax":
+                self.bindEvent();
+                break;
+            case "getBrowseItemsAjax":
+                $.ajaxSetup({
+                    cache: true
+                });
+                //判斷若沒有換頁的js存在時,include進來
+                if (!$.isFunction(window.switch_page)) {
+                    $.getScript("/jss/web/switch_page.js");
+                }
+                if (!$.isFunction(window.del_browse_items)) {
+                    $.getScript("/jss/web/del_browse_items.js");
+                }
+                self.show(0);
+                break;
+            case "getItemSimilarityAjax":
+                //判斷若沒有換頁的js存在時,include進來
+                if (!$.isFunction(window.switch_page)) {
+                    $.getScript("/jss/web/switch_page.js");
+                }
+                self.show(0);
+                break;
+            case "getProdStandardInfoAjax":
+                self.checkstock(0);
+                break;
+            case "initFollowAjax":
+            case "initFollowMagAjax":
+            case "getFollowAuthorAjax":
+            case "setFollowAuthorAjax":
+            case "setFollowPublisherAjax":
+            case "setFollowMagAjax":
+                self.follow();
+                break;
+            case "getCountdownProdAjax":
+                //判斷若沒有換頁的js存在時,include進來
+                if (!$.isFunction(window.countdown)) {
+                    $.getScript("/jss/web/header/countdown.js");
+                }
+                self.show(0);
+                break;
+            case "books66_new":
+                self.getBooks66Item();
+                break;
+            case "getSetProdChildAjax": //組合商品商品內容區
+                self.getSetProdChild();
+                break;
+            default:
+                break;
+        }
+
+        return;
+    }
+
+    //主程式
+    this.main = function(opt_module_id, opt) {
+        module_id = opt_module_id;//模組編碼參數
+        class_name = opt[0];//ajax class name
+        source_var = opt[1];//取得參數
+        view = opt[2];//view
+        if (class_name == 'getConsumerAjax' || class_name == 'getCommentAjax') {
+            c_type = opt[3];
+        }
+        self.execProc();
+    }
+    //執行主程式
+    this.main(opt_module_id, opt);
+}

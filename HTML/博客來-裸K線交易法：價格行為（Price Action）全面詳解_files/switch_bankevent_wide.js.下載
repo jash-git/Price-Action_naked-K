@@ -1,0 +1,177 @@
+function switchBankPageWide(modelID, device) {
+    var $block = $('#'+modelID), 
+        $control = $block.find('.carousel-dots li'),
+        $box = $block.find('.carousel-inner'),
+        _width = $block.width(), 
+        _height = $block.find('.carousel-flex').outerHeight(),
+        _length = $control.length,
+        _left = (_length > 1) ? _width * -1 : 0,
+        _box_width = _width * _length,
+        _execute = false,
+        _new_left,
+        _animate_speed = 1,
+        showIndex = 0,
+        showIndex_old = showIndex,
+        swipeAreaDom = $block.get(0),
+        devicetType = device,
+        showItem,
+        showView,
+        delItem;
+
+    if (_length > 1) {
+        compose();
+    }
+    
+    $control.eq(showIndex).addClass('active');
+
+    $control.click(function() {
+        showIndex_old = showIndex;
+        showIndex = $(this).data('index');
+        if (showIndex_old === showIndex) {
+            return;
+        }
+        
+        var diff_abs = Math.abs(showIndex_old - showIndex);        
+        _new_left = _left - _width;
+
+        if (diff_abs === 1) {
+            if (showIndex_old > showIndex) {
+                _new_left = _left + _width;
+            }
+        } else if (diff_abs === _length - 1) {
+            if (showIndex_old < showIndex) {
+                _new_left = _left + _width;
+            }
+        } else {
+            if (showIndex_old < showIndex) {
+                $block.find('.carousel-flex[data-view='+ showIndex_old +']').after($block.find('.carousel-flex[data-view='+ showIndex +']')).end();
+            }
+            if (showIndex_old > showIndex) {
+                $block.find('.carousel-flex:last').after($block.find('.carousel-flex:first')).end();
+                $block.find('.carousel-flex[data-view='+ showIndex_old +']').before($block.find('.carousel-flex[data-view='+ showIndex +']')).end();
+                _new_left = _left + _width;
+            }
+        }
+        clickMove();
+    });
+
+    $block.find('.carousel-prev').click(function() {
+        c_prev();
+    });
+
+    $block.find('.carousel-next').click(function() {
+        c_next();
+    });
+    
+    $block.find('.item-del').click(function() {
+        showItem = $(this).attr("data-item");
+        showView = $(this).parents('.carousel-flex').data('view');
+        delItem = $(this).parent('div').parent('li');    //按下此時的li
+        deleteItem();
+    });
+    
+    if (devicetType === 'M') {
+        detectTouch();
+    }
+    
+    function detectTouch() {
+        swipeAreaDom.addSwipeCallback(function(direction) {
+            if (direction === 'right') {  //向右滑 (前一個)
+                c_prev();
+            } else if (direction === 'left')  { //向左滑(下一個)
+                c_next();
+            }
+        });
+    }
+
+    function c_prev() {
+        showIndex_old = showIndex;
+        showIndex = (showIndex - 1 < 0) ? _length - 1 : showIndex - 1;
+        _new_left = _left + _width;
+        clickMove();
+    }
+    
+    function c_next() {
+        showIndex_old = showIndex;
+        showIndex = (showIndex + 1)%_length;
+        _new_left = _left - _width;
+        clickMove();
+    }
+    
+    function clickMove() {
+        if (_length === 2) {
+            _execute = true;
+        }
+        $box.stop(false, true).animate({'left' : _new_left}, _animate_speed, function () {
+            compose();
+        });
+        $block.find('.carousel-dots li[data-index='+ showIndex +']').addClass('active').siblings().removeClass('active');
+    }
+    
+    function deleteItem() {
+        $.ajax({url: "//www.books.com.tw/product_show/delBrowseItemsAjax/"+showItem+"/no", type: "get", dataType: "html",
+            success: function(msg) {
+                delItem.remove();   //移除目前的li-item
+                
+                var e_num = (_length === 0) ? 0 : _length-1;
+                if (_length === 2) {
+                    if (showView === 0) {
+                        var blockItem = $block.find('#block_1 li.item:first-child');
+                        $block.find('#block_t li.item:first-child').remove();
+                        $block.find('#block_0 ul.u-item-grid-list').append(blockItem);
+                    }
+                } else if (_length > 2) {
+                    for (i=showView+1;i<_length;i++) {
+                        var blockItem = $block.find('#block_'+i+' li.item:first-child');
+                        $block.find('#block_'+(i-1)+' ul.u-item-grid-list').append(blockItem);
+                    }
+                }
+
+                if ($block.find('#block_'+e_num+' li.item').length < 1) {
+                    _length = e_num;
+                    if (_length === 0) {
+                        $('#section_'+modelID).remove();
+                        return false;
+                    } else if (_length === 1) {
+                        $block.find('#block_'+e_num).remove();
+                        $block.find('.carousel-dots li:last-child').remove();
+                        $block.find('#block_t').remove();
+                        $block.find('.arrow').remove();
+                    }
+                    compose();
+                    if (showView === e_num) {
+                        $block.find('.carousel-dots li[data-index=0]').addClass('active').siblings().removeClass('active');
+                    }
+                }
+            }
+        });
+    }
+
+    function compose() {
+        _left = (_length > 1) ? _width * -1 : 0;
+        _box_width = _width * _length;
+        
+        if (_length === 2) {
+            _box_width = _width * 3;
+        }
+
+        $block.find('.carousel-list').css({
+            width: _width,
+            height: _height,
+            position: 'relative',
+            overflow: 'hidden'
+        });
+
+        if (_length === 2 && _execute) {
+            $block.find('.carousel-flex:last').remove();
+        }
+        for (i=0;i<_length;i++) {
+            var cc = (i === 0 && showIndex === 0) ? _length - 1: (showIndex + i - 1) % _length;
+            $box.append($block.find('.carousel-flex[data-view='+ cc +']'));
+        }
+        if (_length === 2) {
+            $box.append($block.find('.carousel-flex:first').clone());
+            $block.find('.carousel-flex:last').attr('data-view', 't').attr('id', 'block_t');
+        }
+    }
+}

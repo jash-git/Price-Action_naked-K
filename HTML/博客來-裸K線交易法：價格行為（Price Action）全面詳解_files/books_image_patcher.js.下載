@@ -1,0 +1,496 @@
+/* usage: add script to footer of html
+ <script src="/jss/web/books_image_patcher.js"></script>
+ <script>
+ window.onload = function(){
+ var imagePatcher= new BooksImagePatcher();
+ imagePacher.startPatch();
+ }
+ //enable debug with below
+ //var imagePatcher= new BooksImagePatcher({debug:true});
+ //imagePacher.startPatch();
+ </script>
+ */
+
+if (!Array.prototype.forEach) {//add forEach
+    Array.prototype.forEach = function (fn, scope) {
+        for (var i = 0, len = this.length; i < len; ++i) {
+            fn.call(scope, this[i], i, this);
+        }
+    }
+}
+if (window.NodeList && !NodeList.prototype.forEach) {//add forEach
+    NodeList.prototype.forEach = function (callback, thisArg) {
+        thisArg = thisArg || window;
+        for (var i = 0; i < this.length; i++) {
+            callback.call(thisArg, this[i], i, this);
+        }
+    };
+}
+if (!getExplorer) {//is IE/Edge/safari/chrome/firefox etcs
+    var getExplorer = (function () {
+        var explorer = window.navigator.userAgent;
+        var compare = function (s) {
+            return (explorer.indexOf(s) >= 0);
+        };
+        var ie11 = (function () {
+            return ("ActiveXObject" in window)
+        })();
+
+        if (compare("MSIE") || ie11) {
+            return 'ie';
+        } else if (compare("Firefox") && !ie11) {
+            return 'Firefox';
+        } else if (compare("Chrome") && !ie11) {
+            if (explorer.indexOf("Edge") > -1 || explorer.indexOf("Edg") > -1) {
+                return 'Edge';
+            } else {
+                return 'Chrome';
+            }
+        } else if (compare("Opera") && !ie11) {
+            return 'Opera';
+        } else if (compare("Safari") && !ie11) {
+            return 'Safari';
+        }
+    })();
+}
+if (!getImageUrlVars) {
+    function getImageUrlVars(url) {
+        var vars = {};
+        var parts = url.replace(/[?&]+([^=&]+)=([^&]*)/gi,
+                function (m, key, value) {
+                    vars[key] = value;
+                });
+        return vars;
+    }
+}
+
+document.deepCss = function (who, css) {
+    if (!who || !who.style)
+        return '';
+    var sty = css.replace(/\-([a-z])/g, function (a, b) {
+        return b.toUpperCase();
+    });
+    if (who.currentStyle) {
+        return who.style[sty] || who.currentStyle[sty] || '';
+    }
+    var dv = document.defaultView || window;
+    return who.style[sty] ||
+            dv.getComputedStyle(who, "").getPropertyValue(css) || '';
+}
+
+Array.prototype.indexOf = Array.prototype.indexOf ||
+        function (what, index) {
+            index = index || 0;
+            var L = this.length;
+            while (index < L) {
+                if (this[index] === what)
+                    return index;
+                ++index;
+            }
+            return -1;
+        };
+
+
+/*
+ * Logic
+ * ie or ios lower than 14 show original
+ * iPad Pro/Air (Mac OS X) lower than 11 show original
+ * all app webview => do notning
+ */
+
+if (!BooksImagePatcher) {//check redeclaire
+    var BooksImagePatcher = function (startOptions) {
+        this.startPatch = function (currentTimeout) {
+            if (options.force == true) {
+                log("patch! startOption force is true");
+                execLoop();
+                return;
+	    }
+
+            if (browserString != 'ie' && browserString != 'Safari' && isBookAppWebview == false) {//not ie and not safari ,skip
+                log('exit when not (ie/safari/bookAppWebview) ');
+                return;
+            }
+            //is ie skip check condition do loop
+            if (browserString == 'ie') {
+                log("patch! is ie");
+                execLoop();
+                return;
+            }
+            //support webp exit program
+            if (isSupportWebp == true) {
+                log('exit when support webp');
+                return;
+            }
+            
+            if (safariVersion && safariVersion>=14){
+                    log('exit when safariVersion >=14');
+                    return;
+            }
+
+            if (!isIpadOs) {//ios 14 up,skip
+                if (osVersion >= 14) {
+                    log('exit when ios 14');
+                    return;
+                }
+            }
+
+            if (isIpadOs && isIpadSimulator) {
+                if (osVersion >= 14) {
+                    log('exit when ipadOs 14 simulator');
+                    return;
+                }
+            }
+            //ipadOs and not simulator
+            else if (isIpadOs && isIpadSimulator == false) {
+                if (osVersion >= 11) {
+                    log('exit when iPadOS 11( mac x os 11 )');
+                    return;
+                }
+                if (ipadSafariVersion >= 14) {
+                    log('exit when iPadOs 10(mac os x 10) and below with safari 14 up');
+                    return;
+                }
+            }
+            //unknown other ios / ipad condition
+            log("patch! ios below 14 / ipad below 14 / ipad below in simulator / mac os x below 10");
+            execLoop();
+        };
+
+        function execLoop(currentTime) {
+            if (options.logLoop == true) {
+                log("execLoop start");
+            }
+
+            var currentTimeout = typeof currentTimeout !== 'undefined' ? currentTimeout : initTimeout;//init currentTimeout
+            if (currentTimeout >= maxTimout && isAutostop) {// skip when over than max execute time and auto-stop enabled
+                return;
+            }
+            if (currentTimeout < minTimout) {//if init timeout small than min timeout equal to minx timeout
+                currentTimeout = minTimout;
+            } else if (isAutostop) {
+                currentTimeout = currentTimeout * multiplyTimout;//more timeout to next timeout 
+            }
+            //disableLazy();
+            //removeLazy();
+            execPatch();
+            setTimeout(function () {
+                execLoop(currentTimeout);
+            }, currentTimeout);
+        }
+        /*do not delete
+         function disableLazy (){
+         if(self.isLazyDisabled==true){
+         return;
+         }
+         jQuery.prototype.lazyload = function() { console.log('blazy is disabled by ShowOriginalImage') };
+         Blazy = function() {console.log('blazy is disabled by ShowOriginalImage')};
+         self.isLazyDisabled=true;
+         }
+         */
+        /*do not delete
+         function removeLazy() {
+         var imgs = document.querySelectorAll("img");//get all attribute <img src=>
+         imgs.forEach(function (img) {
+         removeClass(img,'b-lazy');
+         removeClass(img,'b-loaded');
+         removeClass(img,'b-error');
+         removeClass(img,'blazy');
+         });
+         }
+         */
+        function execPatch() {
+            var imgs = document.querySelectorAll("img");//get all attribute <img src=>
+            imgs.forEach(function (img) {
+                patchSrc(img);
+                patchBlazy(img);// b-lazy
+                patchLazyLoader(img);//patch lazyloader
+                patchSrcset(img);
+                patchDataSrcset(img);
+            });
+            var elementNames = ["div", "body", "td"];
+            elementNames.forEach( function(tagName) {
+                patchBgImage(tagName);
+            });
+        }
+
+        function verifyBooksImageUrl(imageUrl) {
+            var hasBooksImageUrl = false;
+            if (imageUrl == null) {
+                return false;
+            }
+            bookImagePattern.forEach(function (booksSite) {
+                if (imageUrl.indexOf(booksSite) > -1) {
+                    hasBooksImageUrl = true;
+                }
+            });
+            return hasBooksImageUrl;
+        }
+
+        function replaceBooksImageUrl(imageUrl) {
+            if (verifyBooksImageUrl(imageUrl) == false) {
+                return imageUrl;
+            }
+            var origin_param = getImageUrlVars(imageUrl)["o"];
+            if (origin_param) {//aleady has o=1
+                return imageUrl;
+            }
+            return imageUrl + originalParamater;
+        }
+
+        function patchSrc(img) {
+            var imageUrl = img.getAttribute('src');
+            
+            if (imageUrl==replaceBooksImageUrl(imageUrl)){
+                return;
+            }
+            
+            imageUrl=replaceBooksImageUrl(imageUrl);
+            if (!imageUrl || imageUrl == null || imageUrl == undefined) {
+                return;
+            }
+            img.setAttribute('src', imageUrl);//add url parameter show original image
+        }
+
+
+        function patchSrcset(img) {
+            var imageUrl = img.getAttribute('srcset');
+
+            if (verifyBooksImageUrl(imageUrl) == false) {
+                return;
+            }
+            //replace rwd string (srcset)
+            var newRwdString = replaceRwdString(imageUrl);
+            img.setAttribute('srcset', newRwdString);//add url parameter show original image
+        }
+
+
+        function patchDataSrcset(img) {
+            var imageUrl = img.getAttribute('data-srcset');
+
+            if (verifyBooksImageUrl(imageUrl) == false) {
+                return;
+            }
+            //replace rwd string (data-srcset)
+            var newRwdString = replaceRwdString(imageUrl);
+            img.setAttribute('data-srcset', newRwdString);//add url parameter show original image
+        }
+
+        function patchBlazy(img) {
+            var imageUrl = img.getAttribute('data-src');
+            if (verifyBooksImageUrl(imageUrl) == false) {
+                return;
+            }
+            //console.log('try remove b-lazy');
+            img.setAttribute('data-src', replaceBooksImageUrl(imageUrl));//add url parameter show original image
+            img.setAttribute('src', replaceBooksImageUrl(imageUrl));//add url parameter show original image
+            //remove previous error
+            removeClass(img, 'blazy');
+            removeClass(img, 'b-error');
+        }
+
+        function patchLazyLoader(img) {
+            var imageUrl = img.getAttribute('data-original');
+            if (verifyBooksImageUrl(imageUrl) == false) {
+                return;
+            }
+            img.setAttribute('data-original', replaceBooksImageUrl(imageUrl));//add url parameter show original image
+            img.setAttribute('src', replaceBooksImageUrl(imageUrl));//add url parameter show original image
+        }
+        
+        function patchBgImage(tagName) {
+            var url, B = [], elements = document.getElementsByTagName(tagName);
+            elements = B.slice.call(elements, 0, elements.length);
+            while (elements.length) {
+                ele=elements.shift();
+                imageUrl = document.deepCss(ele, 'background-image');
+                if (!imageUrl){
+                    continue;
+                }
+                imageUrl = /url\(['"]?([^")]+)/.exec(imageUrl) || [];
+                imageUrl = imageUrl[1];
+                
+                if (verifyBooksImageUrl(imageUrl) == false) {
+                    continue;
+                }
+                ele.style.backgroundImage=("url('"+replaceBooksImageUrl(imageUrl)+"')");
+            }
+        }
+
+        function getIsSupportWebp() {
+            var elem = document.createElement('canvas');
+            if (!!(elem.getContext && elem.getContext('2d'))) {
+                return elem.toDataURL('image/webp').indexOf('data:image/webp') == 0;
+            }
+            return false;
+        }
+
+        function getIsIpadOs() {
+            return (navigator.userAgent.match(/(iPad)/) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1));
+        }
+
+        function getSafariVersion() {
+            var ua = navigator.userAgent, tem, 
+                        M = ua.match(/(opera|chrome|safari|firefox|msie|trident(?=\/))\/?\s*(\d+)/i) || [];
+            if(/trident/i.test(M[1])){
+                tem = /\brv[ :]+(\d+)/g.exec(ua) || [];
+                return {name:'IE',version:(tem[1] || '')};
+            }
+            if(M[1]=== 'Chrome'){
+                tem = ua.match(/\b(OPR|Edge)\/(\d+)/);
+                if(tem != null) return {name:tem[1].replace('OPR', 'Opera'),version:tem[2]};
+            }
+            M = M[2]? [M[1], M[2]]: [navigator.appName, navigator.appVersion, '-?'];
+            if((tem = ua.match(/version\/(\d+)/i))!= null){
+                M.splice(1, 1, tem[1]);
+            }
+
+            if (M[0]=="safari" || M[0]=="Safari"){
+               return M[1];
+            }
+            return ;
+        }
+        function getIsIpadSimulator() {
+            var os = "";
+            var agent = window.navigator.userAgent;
+            var start = agent.indexOf('OS ');
+            // is simulator below ios 12 when v is null or undefined
+            if (navigator.userAgent.match(/(iPad)/) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+                var v = (navigator.appVersion).match(/Mac OS X (\d+)_(\d+)_?(\d+)?/);
+                if (v == null || v == undefined) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+
+        function getOsVersion() {
+            var os = "";
+            var agent = window.navigator.userAgent;
+            var start = agent.indexOf('OS ');
+            //
+            if (navigator.userAgent.match(/(iPad)/) || (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)) {
+                var v = (navigator.appVersion).match(/Mac OS X (\d+)_(\d+)_?(\d+)?/);
+                if (v != null || v != undefined) {
+                    return [parseInt(v[1], 10)];
+                }
+            }
+
+            if ((agent.indexOf('iPhone') > -1 || agent.indexOf('iPad') > -1) && start > -1) {
+                os = window.Number(agent.substr(start + 3, 3).replace('_', '.'));//if is simulator
+                return os;
+            }
+            return "";
+        }
+
+	    
+        function getIsBookAppWebview() {
+            var agent = window.navigator.userAgent;
+            var isWebview=false;
+
+            bookAppWebviewPattern.forEach(function (pattern) {
+                if (agent.indexOf(pattern) > -1) {
+                    isWebview=true;
+                }
+            });
+            return isWebview;
+        }
+
+        function hasClass(ele, className) {
+            if (!ele.getAttribute('class')) {
+                return false;
+            }
+            if (ele.getAttribute('class').includes(className)) {
+                return true;
+            }
+            return false;
+        }
+
+        function addClass(ele, className) {
+            ele.setAttribute("class", ele.getAttribute('class') + " " + className);
+
+        }
+
+        function removeClass(ele, className) {
+            if (!ele.hasAttribute("class")) {
+                return;
+            }
+            var replaceRegExp = new RegExp(className, "ig");
+            var currentClass = ele.getAttribute('class');
+            currentClass = currentClass.replace(replaceRegExp, " ");
+            ele.setAttribute("class", currentClass);
+        }
+
+        function replaceRwdString(str) {
+            //split srcset
+            var objs = str.split(',');
+            var rwdImgs = new Array();
+            var srcsets = new Array();
+            objs.forEach(function (imageUrl) {
+                var params = imageUrl.split(/(\s+)/).filter(function (e) {
+                    return e.trim().length > 0;
+                });
+                for (var i = 0; i < params.length; i++) {
+                    if (verifyBooksImageUrl(params[i]) == true) {
+                        params[i] = replaceBooksImageUrl(params[i]);
+                    }
+                    srcsets.push(params.join(" "));
+                    return;
+                }
+            });
+            var newRwdString = srcsets.join(",");
+            return newRwdString;
+        }
+
+        function log(msg) {
+            if (options.debug != true) {
+                return;
+            }
+            console.log(msg);
+        }
+
+        function showDebug() {
+            var debugString = "ShowImageOriginal Debug Info\r\n";
+            debugString += "browserString=" + browserString + "\r\nwindow.navigator.userAgent=" + window.navigator.userAgent;
+            debugString += "\r\nnavigator.platform=" + navigator.platform;
+            debugString += "\r\nisSupportWebp=" + isSupportWebp;
+            debugString += "\r\nSafariVersion=" + safariVersion;
+            debugString += "\r\nisIpadOs=" + isIpadOs + "\r\nosVersion=" + osVersion + "\r\nisIpadSimulator=" + isIpadSimulator;
+            debugString += "\r\nipadSafariVersion=" + ipadSafariVersion;
+            log(debugString);
+
+            //var srcsetStr='https://im1.book.com.tw/image/getImage?i=https://addons.books.com.tw/G/ADbanner/fashion/a/2022/04/0411buty_621312.jpg&amp;v=624d754f&amp;w=0&amp;h=0 w650 2x,https://im1.book.com.tw/image/getImage?i=https://addons.books.com.tw/G/ADbanner/fashion/a/2022/04/0411buty_621312.jpg&amp;v=624d754f&amp;w=0&amp;h=0 h800 3x';
+            //log(replaceRwdString('srcsetStr='+srcsetStr));
+        }
+
+        function dialog(msg) {
+            if (options.debug != true) {
+                return;
+            }
+            alert(msg);
+        }
+
+        var options = startOptions || {};
+        var originalParamater = "&o=1";//&o=1 show original image
+        var bookImagePattern = new Array("book.com.tw/image/getImage?", "books.com.tw/image/getImage?");
+        var bookAppWebviewPattern = new Array("ios_app_shop","Safari  Line","FBIOS");
+        var initTimeout = 0;//0sec
+        var minTimout = 200;//first time 0 sec,second time 0.5sec 
+        var maxTimout = 5 * 60 * 1000;//10*60*1000 , //stop repeat scan new image after 5 min
+        var multiplyTimout = 2;//multiply timeout
+        var isAutostop = false;
+        var self = this;
+        var browserString = getExplorer;
+        var safariVersion = getSafariVersion();
+        var ipadSafariVersion = getSafariVersion();
+        var isBookAppWebview = getIsBookAppWebview();
+        var isIpadSimulator = getIsIpadSimulator();
+        var isSupportWebp = getIsSupportWebp();
+        var isIpadOs = getIsIpadOs();
+        var osVersion = getOsVersion();
+        var isLazyDisabled = false;
+        showDebug();
+    };
+}
+

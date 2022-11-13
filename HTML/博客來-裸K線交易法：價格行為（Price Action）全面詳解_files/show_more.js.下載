@@ -1,0 +1,29 @@
+ function show_more(opt_module_id){
+    var module_id = "";//模組編碼參數
+    var word_on = "看更多"; //more on 顯示文字
+    var word_off = "收回";//more off 顯示文字
+    var self = this;
+     //bind事件
+    this.bindEvent = function(){
+        $("#"+module_id).bind("click", function(){
+            if($(this).hasClass('more off')){ 
+                $("."+module_id+"_more").hide();
+                $(this).removeClass();
+                $(this).addClass("more on");
+                $(this).html(word_on);
+            }else if($(this).hasClass('more on')){
+                $("."+module_id+"_more").show();
+                $(this).removeClass();
+                $(this).addClass("more off");
+                $(this).html(word_off);           
+            }
+        });
+    }
+      //主程式
+    this.main = function(opt_module_id){
+        module_id = opt_module_id;//取得參數
+        self.bindEvent();
+    }
+    //執行主程式
+    this.main(opt_module_id);
+ }
